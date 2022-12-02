@@ -1,9 +1,26 @@
 let a = 0;
 
 function SDF(p) {
-  let sphere1 = new Sphere(0, 0, 150, 50);
+  // mouse = map(mouseX, 0, 800, -400, 400);
+  let sphere1 = new Sphere(-100, 0, 150, 50);
+  let sphere2 = new Sphere(100, 0, 150, 50);
 
-  return sdSphere(p, sphere1);
+  a+=.000001;
+  let r = sphere1.r * 2;
+  let x = cos(a) * r;
+  let y = sin(a) * r;
+  sphere1.pos.x = x;
+  sphere1.pos.y = y;
+
+  r = sphere2.r * 2;
+  x = cos(-a) * r;
+  y = sin(-a) * r;
+  sphere2.pos.x = x;
+  sphere2.pos.y = y;
+
+  let d1 = sdSphere(p, sphere1);
+  let d2 = sdSphere(p, sphere2);
+  return min(d1, d2);
 }
 
 function sdSphere(p, sphere) {
@@ -21,8 +38,8 @@ function draw() {
   background(0);
 
   //rays
-  const FOV = new p5.Vector(90, 90);
-  const RES = new p5.Vector(80, 80);
+  const FOV = new p5.Vector(150, 150);
+  const RES = new p5.Vector(100, 100);
   const CELL = new p5.Vector(int(width/RES.x), int(height/RES.y));
 
   FOV.x = map(FOV.x, 1, 90, 0, 2);
@@ -37,8 +54,14 @@ function draw() {
     for (let y = 0; y < RES.x; y++) {
       let nRay = createVector(theta, phi, 1).normalize();
       let ray = rayMarch(nRay);
-      rect(x * CELL.x, y * CELL.y, CELL.x, CELL.y);
+      
+      // let normal = calcNormal(ray);
+      // let light = new p5.Vector(1, 1, -1);
+      // let brightness = p5.Vector.dot(light, normal);
+      // brightness = map(brightness, 0, 1, 150, 255);
 
+      // fill(brightness);
+      rect(x * CELL.x, y * CELL.y, CELL.x, CELL.y);
       phi -= phiDelta
     }
     theta -= thetaDelta
@@ -82,15 +105,14 @@ function rayMarch(ray) {
   for (let step = 0; step < MAX_STEPS; step++) {
     let distance = SDF(ray);
     if (distance < MIN_DISTANCE) {
-      fill(255);
+
       let normal = calcNormal(ray);
-      let brightness = p5.Vector.dot(new p5.Vector(150, 150, 0), normal);
-      brightness = map(brightness, -100, 100, 1, 255);
-      let r = map(brightness, 1, 255, 50, 255);
-      let b = map(brightness, 1, 255, 0, 155);
-      let g = map(brightness, 1, 255, 200, 255);
-      fill(r, g, b);
-      return ray;
+      let light = new p5.Vector(1, 1, -1);
+      let brightness = p5.Vector.dot(light, normal);
+      brightness = map(brightness, 0, 1, 150, 255);
+
+      fill(brightness);
+      return ray;   
     }
     if (distance > MAX_DISTANCE) {
       fill(0);
